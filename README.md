@@ -32,6 +32,8 @@ Please see https://chromedriver.chromium.org/security-considerations for suggest
 
 ChromeDriver was started successfully.
 
+Use control+c para matar o processo em seguida.
+
 . Agora estamos praticamente no final do processo. Abra o terminal e vá para o diretorio do projeto baixado no primerio passo. Digite o seguinte comando para instalar as dependências finais:
 
 $pip install -r requirements.txt
