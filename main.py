@@ -27,13 +27,13 @@ with Chrome(options = options) as driver:
 
         driver.get("https://www.eneldistribuicao.com.br/ce/LoginAcessoRapidoSegundaVia.aspx")
         
-        inputClientNumber = driver.find_element_by_id("CONTENT_Formulario_NumeroCliente")
+        inputClientNumber = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_NumeroCliente"))
         inputClientNumber.send_keys(nClient)
 
-        inputCnpj = driver.find_element_by_id("CONTENT_Formulario_Documento")
+        inputCnpj = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_Documento"))
         inputCnpj.send_keys(cnpj)
 
-        accessBtn = driver.find_element_by_id("CONTENT_Formulario_Acessar")
+        accessBtn = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_Acessar"))
         accessBtn.click()
 
         table = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_segviarapida_GridViewSegVia"))
