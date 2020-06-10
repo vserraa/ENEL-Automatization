@@ -12,74 +12,76 @@ def enable_download_in_headless_chrome(driver, download_dir):
     params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
     command_result = driver.execute("send_command", params)
 
-downloads_dir = os.getcwd() + "/boletos_pdf/"
+downloads_dir = os.path.join(os.getcwd(), "boletos_pdf")
 
 with open('clientes.csv', newline='') as csvfile:
     clientsTable = list(csv.reader(csvfile))[1:]
 
 options = Options()
-options.headless = True
+options.add_experimental_option('excludeSwitches', ['enable-logging'])
+options.add_argument("--headless")
+options.add_argument("--disable-gpu")
 
 with Chrome(options = options) as driver:
-    enable_download_in_headless_chrome(driver, downloads_dir)
-    for (nClient, cnpj) in clientsTable:
-        print("Initializing download for client " + nClient + "-" + cnpj, end = "\t\t", flush = True)
+	enable_download_in_headless_chrome(driver, downloads_dir)
+	for (nClient, cnpj) in clientsTable:
+		print("Initializing download for client " + nClient + "-" + cnpj, end = "\t\t", flush = True)
 
-        driver.get("https://www.eneldistribuicao.com.br/ce/LoginAcessoRapidoSegundaVia.aspx")
-        
-        inputClientNumber = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_NumeroCliente"))
-        inputClientNumber.send_keys(nClient)
+		driver.get("https://www.eneldistribuicao.com.br/ce/LoginAcessoRapidoSegundaVia.aspx")
 
-        inputCnpj = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_Documento"))
-        inputCnpj.send_keys(cnpj)
+		inputClientNumber = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_NumeroCliente"))
+		inputClientNumber.send_keys(nClient)
 
-        accessBtn = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_Acessar"))
-        accessBtn.click()
+		inputCnpj = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_Documento"))
+		inputCnpj.send_keys(cnpj)
 
-        table = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_segviarapida_GridViewSegVia"))
+		accessBtn = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_Formulario_Acessar"))
+		accessBtn.click()
 
-        firstRow = table.find_element_by_xpath(".//tr[2]")
-        status = firstRow.find_element_by_xpath(".//td[8]").text
+		table = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_segviarapida_GridViewSegVia"))
 
-        checkBtn = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_segviarapida_GridViewSegVia_CheckFatura_0"))
-        checkBtn.click()
+		firstRow = table.find_element_by_xpath(".//tr[2]")
+		status = firstRow.find_element_by_xpath(".//td[8]").text
 
-        downloadsPath = downloads_dir + "FaturaIndividual.pdf"
+		checkBtn = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_segviarapida_GridViewSegVia_CheckFatura_0"))
+		checkBtn.click()
 
-        if os.path.exists(downloadsPath):
-            os.remove(downloadsPath)
+		downloadsPath = os.path.join(downloads_dir, "FaturaIndividual.pdf")
 
-        downloadInit = False
-        for i in range(10):
-            try:
-                savePdfBtn = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_segviarapida_btnSalvarPDF"))    
-                savePdfBtn.click()
-                downloadInit = True
-                break
-            except ElementClickInterceptedException as e:
-                time.sleep(1)
+		if os.path.exists(downloadsPath):
+		    os.remove(downloadsPath)
 
-        if not downloadInit:
-            print("FAILED")
-            continue
+		downloadInit = False
+		for i in range(10):
+		    try:
+		        savePdfBtn = WebDriverWait(driver, timeout = 10).until(lambda d: d.find_element_by_id("CONTENT_segviarapida_btnSalvarPDF"))    
+		        savePdfBtn.click()
+		        downloadInit = True
+		        break
+		    except ElementClickInterceptedException as e:
+		        time.sleep(1)
 
-        downloadComplete = False
-        for i in range(20):
-            if os.path.exists(downloadsPath):
-                downloadComplete = True
-                break
-            else:
-                time.sleep(1)
+		if not downloadInit:
+		    print("FAILED")
+		    continue
 
-        if not downloadComplete:
-            print("FAILED")
-            continue
+		downloadComplete = False
+		for i in range(20):
+		    if os.path.exists(downloadsPath):
+		        downloadComplete = True
+		        break
+		    else:
+		        time.sleep(1)
 
-        filename = nClient + "-" + cnpj + ".pdf"
-        newPath = downloads_dir+ filename
+		if not downloadComplete:
+		    print("FAILED")
+		    continue
 
-        if os.path.exists(newPath):
-            os.remove(newPath)
+		filename = nClient + "-" + cnpj + ".pdf"
+		newPath = os.path.join(downloads_dir, filename)
 
-        os.rename(downloadsPath, newPath)
-        print("SUCCESSFUL")
+		if os.path.exists(newPath):
+		    os.remove(newPath)
+
+		os.rename(downloadsPath, newPath)
+		print("SUCCESSFUL")
